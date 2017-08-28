@@ -4,14 +4,14 @@
 ;; Description: 
 ;; Author: Daniel Barreto
 ;; Created: Tue Aug 22 13:46:01 2017 (+0200)
-;; Version: 
+;; Version: 0.1.0
 ;; Package-Requires: ()
 ;; Last-Updated: 
 ;;           By: 
 ;;     Update #: 0
 ;; URL: 
 ;; Doc URL: 
-;; Keywords: 
+;; Keywords: tools
 ;; Compatibility: 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -118,6 +118,8 @@ after `password-store-timeout' seconds."
   (interactive (list (read-string "Password entry: ")
                      (read-passwd "OTP URI: " t)))
   (password-store-otp--insert entry otp-uri t))
+
+(provide 'password-store-otp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; password-store-otp.el ends here

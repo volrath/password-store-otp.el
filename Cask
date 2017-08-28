@@ -1,6 +1,9 @@
 (source melpa)
 
-(package-file "pass-otp.el")
+(package-file "password-store-otp.el")
+(files "password-store-otp.el")
+
+(depends-on "password-store")
 
 (development
- (depends-on "ert"))
+ (depends-on "buttercup"))
