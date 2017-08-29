@@ -142,7 +142,7 @@
       (expect (password-store-otp-qrcode entry "ASCII") :to-equal "<the qr code>")
       (expect 'password-store--run-show :to-have-been-called-with entry)
       (expect 'shell-command-to-string :to-have-been-called-with
-              (format "qrcode -o - -tASCII %s"
+              (format "qrencode -o - -tASCII %s"
                       (shell-quote-argument uri))))))
 
 (describe "otp insert"
