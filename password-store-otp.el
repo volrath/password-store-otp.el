@@ -1,31 +1,20 @@
-;;; password-store-otp.el --- 
+;;; password-store-otp.el --- Password store (pass) OTP extension support           -*- lexical-binding: t -*-
 ;; 
 ;; Filename: password-store-otp.el
-;; Description: 
 ;; Author: Daniel Barreto
 ;; Created: Tue Aug 22 13:46:01 2017 (+0200)
 ;; Version: 0.1.0
-;; Package-Requires: ()
-;; Last-Updated: 
-;;           By: 
-;;     Update #: 0
-;; URL: 
-;; Doc URL: 
-;; Keywords: tools
-;; Compatibility: 
+;; Package-Requires: ((emacs "24.3") (s "1.9.0") (password-store "0.1"))
+;; URL: https://github.com/volrath/password-store-otp.el
+;; Keywords: tools, pass
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
-;;; Commentary: 
+;;; Commentary:
 ;; 
 ;; This package provides functions for working with the pass-otp
 ;; extension for pass ("the standard Unix password manager").
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;; Change Log:
-;; 
-;; 
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;; This program is free software: you can redistribute it and/or modify
@@ -55,6 +44,7 @@
   :type 'string)
 
 (defun password-store-otp--otpauth-lines (lines)
+  "Filter out from LINES those that are OTP urls."
   (seq-filter (lambda (l) (string-prefix-p "otpauth://" l))
               lines))
 
@@ -79,6 +69,7 @@ after `password-store-timeout' seconds."
         (run-at-time (password-store-timeout) nil 'password-store-clear)))
 
 (defun password-store-otp--insert (entry secret &optional append)
+  "Insert in ENTRY a SECRET, optionally APPEND it."
   (message "%s" (shell-command-to-string (format "echo %s | %s otp %s -f %s"
                                                  (shell-quote-argument secret)
                                                  password-store-executable
@@ -97,28 +88,33 @@ after `password-store-timeout' seconds."
       (format "/tmp/%s.png" (make-temp-name entry-base)))))
 
 (defun password-store-otp-code (entry)
+  "Return an OTP code from ENTRY."
   (password-store--run "otp" entry))
 
 (defun password-store-otp-uri (entry)
+  "Return an OTP URI from ENTRY."
   (password-store--run "otp" "uri" entry))
 
 
 ;;; Interactive functions
 
 (defun password-store-otp-code-copy (entry)
+  "Copy an OTP code from ENTRY to clipboard."
   (interactive)
   (password-store-otp--safe-copy (password-store-otp-code entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 (defun password-store-otp-uri-copy (entry)
+  "Copy an OTP URI from ENTRY to clipboard."
   (interactive)
   (password-store-otp--safe-copy (password-store-otp-uri entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 (defun password-store-otp-qrcode (entry &optional type)
+  "Display a QR code from ENTRY's OTP, using TYPE."
   (interactive (list (read-string "Password entry: ")))
   (if type
-      (shell-command-to-string (format "qrcode -o - -t%s %s"
+      (shell-command-to-string (format "qrencode -o - -t%s %s"
                                        type
                                        (shell-quote-argument (password-store-otp--get-uri entry))))
     (password-store--run "otp" "uri" "-q" entry)))
@@ -136,7 +132,7 @@ after `password-store-timeout' seconds."
   (password-store-otp--insert entry otp-uri t))
 
 (defun password-store-otp-append-from-image (entry)
-  "Check clipboard for an image and scan it to get a value otp uri, append it into ENTRY."
+  "Check clipboard for an image and scan it to get an OTP URI, append it to ENTRY."
   (interactive (list (read-string "Password entry: ")))
   (let ((qr-image-filename (password-store-otp--get-qr-image-filename entry)))
     (when (not (zerop (call-process "import" nil nil nil qr-image-filename)))
