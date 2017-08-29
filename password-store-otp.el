@@ -50,11 +50,11 @@
 
 (defun password-store-otp--get-uri (entry)
   "Own version that produces error if ENTRY has no otp uri."
-  (setq url (car (password-store-otp--otpauth-lines
-                  (s-lines (password-store--run-show entry)))))
-  (when (not url)
-    (error "No OTP url found"))
-  url)
+  (let ((url (car (password-store-otp--otpauth-lines
+                   (s-lines (password-store--run-show entry))))))
+    (when (not url)
+      (error "No OTP url found"))
+    url))
 
 (defun password-store-otp--safe-copy (secret)
   "Add SECRET to kill ring.
