@@ -95,32 +95,30 @@ after `password-store-timeout' seconds."
   "Return an OTP URI from ENTRY."
   (password-store--run "otp" "uri" entry))
 
+(defun password-store-otp-qrcode (entry &optional type)
+  "Display a QR code from ENTRY's OTP, using TYPE."
+  (if type
+      (shell-command-to-string (format "qrencode -o - -t%s %s"
+                                       type
+                                       (shell-quote-argument (password-store-otp--get-uri entry))))
+    (password-store--run "otp" "uri" "-q" entry)))
+
 
 ;;; Interactive functions
 
 ;;;###autoload
 (defun password-store-otp-code-copy (entry)
   "Copy an OTP code from ENTRY to clipboard."
-  (interactive)
+  (interactive (list (read-string "Password entry: ")))
   (password-store-otp--safe-copy (password-store-otp-code entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 ;;;###autoload
 (defun password-store-otp-uri-copy (entry)
   "Copy an OTP URI from ENTRY to clipboard."
-  (interactive)
+  (interactive (list (read-string "Password entry: ")))
   (password-store-otp--safe-copy (password-store-otp-uri entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
-
-;;;###autoload
-(defun password-store-otp-qrcode (entry &optional type)
-  "Display a QR code from ENTRY's OTP, using TYPE."
-  (interactive (list (read-string "Password entry: ")))
-  (if type
-      (shell-command-to-string (format "qrencode -o - -t%s %s"
-                                       type
-                                       (shell-quote-argument (password-store-otp--get-uri entry))))
-    (password-store--run "otp" "uri" "-q" entry)))
 
 ;;;###autoload
 (defun password-store-otp-insert (entry otp-uri)
