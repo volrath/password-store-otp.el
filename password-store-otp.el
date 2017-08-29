@@ -49,12 +49,17 @@
 (require 'seq)
 (require 's)
 
+(defcustom password-store-otp-screenshots-path nil
+  "OTP screenshots directory."
+  :group 'password-store
+  :type 'string)
+
 (defun password-store-otp--otpauth-lines (lines)
   (seq-filter (lambda (l) (string-prefix-p "otpauth://" l))
               lines))
 
 (defun password-store-otp--get-uri (entry)
-  "Own version that produces error if entry has no otp uri"
+  "Own version that produces error if ENTRY has no otp uri."
   (setq url (car (password-store-otp--otpauth-lines
                   (s-lines (password-store--run-show entry)))))
   (when (not url)
@@ -80,13 +85,25 @@ after `password-store-timeout' seconds."
                                                  (if append "append" "insert")
                                                  (shell-quote-argument entry)))))
 
-;;; Interactive functions
+(defun password-store-otp--get-qr-image-filename (entry)
+  "Return a qr-image-filename for given ENTRY."
+  (let ((entry-base (file-name-nondirectory entry)))
+    (if password-store-otp-screenshots-path
+        (let ((fname (format "%s-%s.png"
+                             entry-base
+                             (format-time-string "%Y-%m-%dT%T"))))
+          (concat (file-name-as-directory password-store-otp-screenshots-path)
+                  fname))
+      (format "/tmp/%s.png" (make-temp-name entry-base)))))
 
 (defun password-store-otp-code (entry)
   (password-store--run "otp" entry))
 
 (defun password-store-otp-uri (entry)
   (password-store--run "otp" "uri" entry))
+
+
+;;; Interactive functions
 
 (defun password-store-otp-code-copy (entry)
   (interactive)
@@ -113,10 +130,23 @@ after `password-store-timeout' seconds."
   (password-store-otp--insert entry otp-uri))
 
 (defun password-store-otp-append (entry otp-uri)
-  "Insert a new ENTRY containing OTP-URI."
+  "Append to an ENTRY the given OTP-URI."
   (interactive (list (read-string "Password entry: ")
                      (read-passwd "OTP URI: " t)))
   (password-store-otp--insert entry otp-uri t))
+
+(defun password-store-otp-append-from-image (entry)
+  "Check clipboard for an image and scan it to get a value otp uri, append it into ENTRY."
+  (interactive (list (read-string "Password entry: ")))
+  (let ((qr-image-filename (password-store-otp--get-qr-image-filename entry)))
+    (when (not (zerop (call-process "import" nil nil nil qr-image-filename)))
+      (error "Couldn't get image from clipboard"))
+    (password-store-otp-append
+     entry
+     (shell-command-to-string (format "zbarimg -q --raw %s"
+                                      (shell-quote-argument qr-image-filename))))
+    (when (not password-store-otp-screenshots-path)
+      (delete-file qr-image-filename))))
 
 (provide 'password-store-otp)
 

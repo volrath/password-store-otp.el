@@ -46,6 +46,7 @@
 ;;; Code:
 
 (require 'buttercup)
+(require 'dash)
 (require 'password-store-otp)
 
 (describe "get uri"
@@ -171,6 +172,73 @@
       (spy-on 'message)
       (password-store-otp-append entry secret)
       (expect 'shell-command-to-string :to-have-been-called-with cmd))))
+
+(describe "append from image"
+  :var (entry uri qr-fname)
+
+  (before-each
+    (setq entry "some-entry")
+    (setq uri "otpauth://some/secret")
+    (spy-on 'call-process :and-return-value 0)
+    (spy-on 'shell-command-to-string :and-return-value uri)
+    (spy-on 'delete-file)
+    (spy-on 'message))
+
+  (it "throws error when clipboard image is unavailable"
+    (spy-on 'call-process :and-return-value 1)
+    (expect (password-store-otp-append-from-image "some-entry") :to-throw 'error))
+
+  (describe "when `password-store-otp-screenshots-path` is not set,"
+    (before-each
+      (let ((password-store-executable "pass"))
+        (password-store-otp-append-from-image entry)
+        (setq qr-fname (car (last (spy-calls-args-for 'call-process 0))))))
+
+    (it "uses a temporary image to save the screenshot"
+      ;; call-process -- import screenshot
+      (expect (spy-calls-count 'call-process) :to-equal 1)
+      (expect (-butlast (spy-calls-args-for 'call-process 0)) :to-equal '("import" nil nil nil))
+      (expect qr-fname :to-match (format "/tmp/%s.*\.png" entry))
+      ;; zbarimg call
+      (expect (spy-calls-args-for 'shell-command-to-string 0)
+              :to-equal
+              (list (format "zbarimg -q --raw %s" (shell-quote-argument qr-fname))))
+      ;; password-store-otp-append
+      (expect (spy-calls-args-for 'shell-command-to-string 1)
+              :to-equal
+              (list (format "echo %s | pass otp append -f %s"
+                            (shell-quote-argument uri)
+                            (shell-quote-argument entry)))))
+
+    (it "and deletes it at the end"
+      (expect 'delete-file :to-have-been-called-with qr-fname)))
+
+  (describe "when `password-store-otp-screenshots-path` is set,"
+    (before-each
+      (let ((password-store-executable "pass")
+            (password-store-otp-screenshots-path "/home/test/path")
+            (entry "some/entry"))
+        (password-store-otp-append-from-image entry)
+        (setq qr-fname (car (last (spy-calls-args-for 'call-process 0))))))
+
+    (it "uses it to save the screenshot taken"
+      ;; call-process -- import screenshot
+      (expect (spy-calls-count 'call-process) :to-equal 1)
+      (expect (-butlast (spy-calls-args-for 'call-process 0)) :to-equal '("import" nil nil nil))
+      (expect qr-fname :to-match (format "/home/test/path/entry.*\.png" entry))
+      ;; zbarimg call
+      (expect (spy-calls-args-for 'shell-command-to-string 0)
+              :to-equal
+              (list (format "zbarimg -q --raw %s" (shell-quote-argument qr-fname))))
+      ;; password-store-otp-append
+      (expect (spy-calls-args-for 'shell-command-to-string 1)
+              :to-equal
+              (list (format "echo %s | pass otp append -f %s"
+                            (shell-quote-argument uri)
+                            (shell-quote-argument "some/entry")))))
+
+    (it "and doesn't delete the image at the end"
+      (expect 'delete-file :not :to-have-been-called))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; test-password-store-otp.el ends here
