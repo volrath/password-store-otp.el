@@ -1,6 +1,6 @@
 # password-store-otp
 [![Emacs](https://img.shields.io/badge/Emacs-25-8e44bd.svg)](https://www.gnu.org/software/emacs/)
-[![Build Status](https://travis-ci.org/volrath/password-store-otp.el.svg?branch=master)](https://travis-ci.org/volrath/treepy.el)
+[![Build Status](https://travis-ci.org/volrath/password-store-otp.el.svg?branch=master)](https://travis-ci.org/volrath/password-store-otp.el)
 
 Emacs functions to interact with
 the [`pass-otp`](https://github.com/tadfisher/pass-otp) extension
