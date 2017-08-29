@@ -98,18 +98,21 @@ after `password-store-timeout' seconds."
 
 ;;; Interactive functions
 
+;;;###autoload
 (defun password-store-otp-code-copy (entry)
   "Copy an OTP code from ENTRY to clipboard."
   (interactive)
   (password-store-otp--safe-copy (password-store-otp-code entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
+;;;###autoload
 (defun password-store-otp-uri-copy (entry)
   "Copy an OTP URI from ENTRY to clipboard."
   (interactive)
   (password-store-otp--safe-copy (password-store-otp-uri entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
+;;;###autoload
 (defun password-store-otp-qrcode (entry &optional type)
   "Display a QR code from ENTRY's OTP, using TYPE."
   (interactive (list (read-string "Password entry: ")))
@@ -119,18 +122,21 @@ after `password-store-timeout' seconds."
                                        (shell-quote-argument (password-store-otp--get-uri entry))))
     (password-store--run "otp" "uri" "-q" entry)))
 
+;;;###autoload
 (defun password-store-otp-insert (entry otp-uri)
   "Insert a new ENTRY containing OTP-URI."
   (interactive (list (read-string "Password entry: ")
                      (read-passwd "OTP URI: " t)))
   (password-store-otp--insert entry otp-uri))
 
+;;;###autoload
 (defun password-store-otp-append (entry otp-uri)
   "Append to an ENTRY the given OTP-URI."
   (interactive (list (read-string "Password entry: ")
                      (read-passwd "OTP URI: " t)))
   (password-store-otp--insert entry otp-uri t))
 
+;;;###autoload
 (defun password-store-otp-append-from-image (entry)
   "Check clipboard for an image and scan it to get an OTP URI, append it to ENTRY."
   (interactive (list (read-string "Password entry: ")))

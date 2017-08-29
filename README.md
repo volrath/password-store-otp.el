@@ -15,15 +15,13 @@ and Linux, YMMV.
 Shares all dependencies with `pass` and `pass-otp`, and introduces these for SS
 handling and QR code generation:
 
-- imagemagick
+- imagemagick (--with-x11 support)
 - zbar-tools
 - qrencode
 
 ## Getting started
 
-Place `password-store-otp.el` somewhere in your `load-path` and `(require
-'password-store-otp)`. Then you'll have all the `password-store-otp-*` functions
-available.
+Place `password-store-otp.el` somewhere in your `load-path`.
 
 # Available functions
 
@@ -35,6 +33,12 @@ available.
 
   Return an OTP URI from ENTRY.
 
+- `password-store-otp-qrcode` entry &optional type
+
+  Display a QR Code from ENTRY's OTP URI.
+  An optional TYPE might be passed, this argument reflects `qrencode` command
+  type, please refer to its man page.
+
 - `password-store-otp-code-copy` (interactive) entry
 
   Copy an OTP code/token from ENTRY to clipboard.
@@ -42,12 +46,6 @@ available.
 - `password-store-otp-uri-copy` (interactive) entry
 
   Copy an OTP URI from ENTRY to clipboard.
-
-- `password-store-otp-qrcode` (interactive) entry &optional type
-
-  Display a QR Code from ENTRY's OTP URI.
-  An optional TYPE might be passed, this argument reflects `qrencode` command
-  type, please refer to its man page.
 
 - `password-store-otp-insert` (interactive) entry otp-uri
 
