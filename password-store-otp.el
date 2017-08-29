@@ -46,12 +46,20 @@
 ;;; Code:
 
 (require 'password-store)
+(require 'seq)
 (require 's)
 
-(defgroup password-store-otp '()
-  "Emacs mode for password-store-otp."
-  :prefix "password-store-otp-"
-  :group 'password-store)
+(defun password-store-otp--otpauth-lines (lines)
+  (seq-filter (lambda (l) (string-prefix-p "otpauth://" l))
+              lines))
+
+(defun password-store-otp--get-uri (entry)
+  "Own version that produces error if entry has no otp uri"
+  (setq url (car (password-store-otp--otpauth-lines
+                  (s-lines (password-store--run-show entry)))))
+  (when (not url)
+    (error "No OTP url found"))
+  url)
 
 (defun password-store-otp--safe-copy (secret)
   "Add SECRET to kill ring.
@@ -65,17 +73,6 @@ after `password-store-timeout' seconds."
   (setq password-store-timeout-timer
         (run-at-time (password-store-timeout) nil 'password-store-clear)))
 
-(defun password-store-otp--otpauth-lines (lines)
-  (seq-filter (lambda (l) (string-prefix-p "otpauth://" l))
-              lines))
-
-(defun password-store-otp--get-uri (entry)
-  "Own version that produces error if entry has no otp uri"
-  (if-let ((url (car (password-store-otp--otpauth-lines
-                      (s-lines (password-store--run-show entry))))))
-      url
-    (error "No OTP url found.")))
-
 (defun password-store-otp--insert (entry secret &optional append)
   (message "%s" (shell-command-to-string (format "echo %s | %s otp %s -f %s"
                                                  (shell-quote-argument secret)
@@ -85,15 +82,15 @@ after `password-store-timeout' seconds."
 
 ;;; Interactive functions
 
-(defun password-store-opt-get (entry)
+(defun password-store-otp-code (entry)
   (password-store--run "otp" entry))
 
 (defun password-store-otp-uri (entry)
   (password-store--run "otp" "uri" entry))
 
-(defun password-store-otp-copy (entry)
+(defun password-store-otp-code-copy (entry)
   (interactive)
-  (password-store-otp--safe-copy (password-store-otp-get entry))
+  (password-store-otp--safe-copy (password-store-otp-code entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 (defun password-store-otp-uri-copy (entry)
@@ -104,7 +101,9 @@ after `password-store-timeout' seconds."
 (defun password-store-otp-qrcode (entry &optional type)
   (interactive (list (read-string "Password entry: ")))
   (if type
-      (password-store--run "otp" "uri" "-q" (format "-t%s" type) )
+      (shell-command-to-string (format "qrcode -o - -t%s %s"
+                                       type
+                                       (shell-quote-argument (password-store-otp--get-uri entry))))
     (password-store--run "otp" "uri" "-q" entry)))
 
 (defun password-store-otp-insert (entry otp-uri)
