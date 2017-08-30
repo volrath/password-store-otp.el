@@ -69,12 +69,12 @@
     (spy-on 'password-store--run-show :and-return-value (format file-contents ""))
     (expect (password-store-otp--get-uri "some-pass") :to-throw 'error)))
 
-(describe "otp code"
+(describe "otp token"
   (it "calls `pass otp <entry>`"
     (let ((entry "some-entry")
-          (code  "123456"))
-      (spy-on 'password-store--run :and-return-value code)
-      (expect (password-store-otp-code entry) :to-equal code)
+          (token  "123456"))
+      (spy-on 'password-store--run :and-return-value token)
+      (expect (password-store-otp-token entry) :to-equal token)
       (expect 'password-store--run :to-have-been-called-with "otp" entry))))
 
 (describe "otp uri"
@@ -85,21 +85,21 @@
       (expect (password-store-otp-uri entry) :to-equal uri)
       (expect 'password-store--run :to-have-been-called-with "otp" "uri" entry))))
 
-(describe "otp code copy"
-  :var (entry code)
+(describe "otp token copy"
+  :var (entry token)
 
   (before-each
     (setq entry "some-entry")
-    (setq code "12345")
+    (setq token "12345")
     (spy-on 'message)
-    (spy-on 'password-store--run :and-return-value code)
-    (password-store-otp-code-copy entry))
+    (spy-on 'password-store--run :and-return-value token)
+    (password-store-otp-token-copy entry))
 
   (it "calls `pass otp <entry>`"
     (expect 'password-store--run :to-have-been-called-with "otp" entry))
 
-  (it "puts a code into the kill-ring"
-    (expect (car kill-ring-yank-pointer) :to-equal code))
+  (it "puts a token into the kill-ring"
+    (expect (car kill-ring-yank-pointer) :to-equal token))
 
   (it "clears previous pass secrets and handles automatic deletion"
     (expect password-store-timeout-timer)))
@@ -117,7 +117,7 @@
   (it "calls `pass otp uri <entry>`"
     (expect 'password-store--run :to-have-been-called-with "otp" "uri" entry))
 
-  (it "puts a code into the kill-ring"
+  (it "puts the uri into the kill-ring"
     (expect (car kill-ring-yank-pointer) :to-equal uri))
 
   (it "clears previous pass secrets and handles automatic deletion"

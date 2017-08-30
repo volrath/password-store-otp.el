@@ -87,8 +87,8 @@ after `password-store-timeout' seconds."
                   fname))
       (format "/tmp/%s.png" (make-temp-name entry-base)))))
 
-(defun password-store-otp-code (entry)
-  "Return an OTP code from ENTRY."
+(defun password-store-otp-token (entry)
+  "Return an OTP token from ENTRY."
   (password-store--run "otp" entry))
 
 (defun password-store-otp-uri (entry)
@@ -107,10 +107,10 @@ after `password-store-timeout' seconds."
 ;;; Interactive functions
 
 ;;;###autoload
-(defun password-store-otp-code-copy (entry)
-  "Copy an OTP code from ENTRY to clipboard."
+(defun password-store-otp-token-copy (entry)
+  "Copy an OTP token from ENTRY to clipboard."
   (interactive (list (read-string "Password entry: ")))
-  (password-store-otp--safe-copy (password-store-otp-code entry))
+  (password-store-otp--safe-copy (password-store-otp-token entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 ;;;###autoload
