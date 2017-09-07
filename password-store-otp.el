@@ -44,7 +44,7 @@
   :type 'string)
 
 (defun password-store-otp--otpauth-lines (lines)
-  "Filter out from LINES those that are OTP urls."
+  "Return from LINES those that are OTP urls."
   (seq-filter (lambda (l) (string-prefix-p "otpauth://" l))
               lines))
 
