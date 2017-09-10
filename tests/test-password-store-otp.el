@@ -191,20 +191,21 @@
   (describe "when `password-store-otp-screenshots-path` is not set,"
     (before-each
       (let ((password-store-executable "pass"))
+        (spy-on 'call-process :and-call-fake (lambda (&rest _) (insert uri) 0))
         (password-store-otp-append-from-image entry)
         (setq qr-fname (car (last (spy-calls-args-for 'call-process 0))))))
 
     (it "uses a temporary image to save the screenshot"
+      (expect (spy-calls-count 'call-process) :to-equal 2)
       ;; call-process -- import screenshot
-      (expect (spy-calls-count 'call-process) :to-equal 1)
       (expect (-butlast (spy-calls-args-for 'call-process 0)) :to-equal '("import" nil nil nil))
       (expect qr-fname :to-match (format "/tmp/%s.*\.png" entry))
       ;; zbarimg call
-      (expect (spy-calls-args-for 'shell-command-to-string 0)
+      (expect (spy-calls-args-for 'call-process 1)
               :to-equal
-              (list (format "zbarimg -q --raw %s" (shell-quote-argument qr-fname))))
+              `("zbarimg" nil t nil "-q" "--raw" ,qr-fname))
       ;; password-store-otp-append
-      (expect (spy-calls-args-for 'shell-command-to-string 1)
+      (expect (spy-calls-args-for 'shell-command-to-string 0)
               :to-equal
               (list (format "echo %s | pass otp append -f %s"
                             (shell-quote-argument uri)
@@ -218,20 +219,21 @@
       (let ((password-store-executable "pass")
             (password-store-otp-screenshots-path "/home/test/path")
             (entry "some/entry"))
+        (spy-on 'call-process :and-call-fake (lambda (&rest _) (insert uri) 0))
         (password-store-otp-append-from-image entry)
         (setq qr-fname (car (last (spy-calls-args-for 'call-process 0))))))
 
     (it "uses it to save the screenshot taken"
+      (expect (spy-calls-count 'call-process) :to-equal 2)
       ;; call-process -- import screenshot
-      (expect (spy-calls-count 'call-process) :to-equal 1)
       (expect (-butlast (spy-calls-args-for 'call-process 0)) :to-equal '("import" nil nil nil))
       (expect qr-fname :to-match (format "/home/test/path/entry.*\.png" entry))
       ;; zbarimg call
-      (expect (spy-calls-args-for 'shell-command-to-string 0)
+      (expect (spy-calls-args-for 'call-process 1)
               :to-equal
-              (list (format "zbarimg -q --raw %s" (shell-quote-argument qr-fname))))
+              `("zbarimg" nil t nil "-q" "--raw" ,(shell-quote-argument qr-fname)))
       ;; password-store-otp-append
-      (expect (spy-calls-args-for 'shell-command-to-string 1)
+      (expect (spy-calls-args-for 'shell-command-to-string 0)
               :to-equal
               (list (format "echo %s | pass otp append -f %s"
                             (shell-quote-argument uri)

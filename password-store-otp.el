@@ -87,13 +87,26 @@ after `password-store-timeout' seconds."
                   fname))
       (format "/tmp/%s.png" (make-temp-name entry-base)))))
 
+(defmacro password-store-otp--related-error (body)
+  "Catch otp related errors in BODY and displays a better error message."
+  (declare (indent defun))
+  `(condition-case err
+       ,body
+     (error
+      (let ((error-msg (error-message-string err)))
+        (if (string= error-msg "Error: otp is not in the password store.")
+            (error "Error: pass OTP extension is not installed")
+          (error error-msg))))))
+
 (defun password-store-otp-token (entry)
   "Return an OTP token from ENTRY."
-  (password-store--run "otp" entry))
+  (password-store-otp--related-error
+    (password-store--run "otp" entry)))
 
 (defun password-store-otp-uri (entry)
   "Return an OTP URI from ENTRY."
-  (password-store--run "otp" "uri" entry))
+  (password-store-otp--related-error
+    (password-store--run "otp" "uri" entry)))
 
 (defun password-store-otp-qrcode (entry &optional type)
   "Display a QR code from ENTRY's OTP, using TYPE."
@@ -101,7 +114,8 @@ after `password-store-timeout' seconds."
       (shell-command-to-string (format "qrencode -o - -t%s %s"
                                        type
                                        (shell-quote-argument (password-store-otp--get-uri entry))))
-    (password-store--run "otp" "uri" "-q" entry)))
+    (password-store-otp--related-error
+      (password-store--run "otp" "uri" "-q" entry))))
 
 
 ;;; Interactive functions
@@ -141,10 +155,15 @@ after `password-store-timeout' seconds."
   (let ((qr-image-filename (password-store-otp--get-qr-image-filename entry)))
     (when (not (zerop (call-process "import" nil nil nil qr-image-filename)))
       (error "Couldn't get image from clipboard"))
-    (password-store-otp-append
-     entry
-     (shell-command-to-string (format "zbarimg -q --raw %s"
-                                      (shell-quote-argument qr-image-filename))))
+    (with-temp-buffer
+      (condition-case err
+          (call-process "zbarimg" nil t nil "-q" "--raw"
+                        (shell-quote-argument qr-image-filename))
+        (error
+         (error "It seems you don't have `zbar-tools' installed")))
+      (password-store-otp-append
+       entry
+       (buffer-substring (point-min) (point-max))))
     (when (not password-store-otp-screenshots-path)
       (delete-file qr-image-filename))))
 
