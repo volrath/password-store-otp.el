@@ -95,7 +95,7 @@ after `password-store-timeout' seconds."
      (error
       (let ((error-msg (error-message-string err)))
         (if (string= error-msg "Error: otp is not in the password store.")
-            (error "Error: pass OTP extension is not installed")
+            (error "Error: pass extension `pass-otp' is not installed")
           (error error-msg))))))
 
 (defun password-store-otp-token (entry)
