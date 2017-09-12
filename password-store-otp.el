@@ -84,8 +84,8 @@ after `password-store-timeout' seconds."
         (let ((fname (format "%s-%s.png"
                              entry-base
                              (format-time-string "%Y-%m-%dT%T"))))
-          (concat (file-name-as-directory password-store-otp-screenshots-path)
-                  fname))
+          (expand-file-name fname
+                            password-store-otp-screenshots-path))
       (format "/tmp/%s.png" (make-temp-name entry-base)))))
 
 (defmacro password-store-otp--related-error (body)
