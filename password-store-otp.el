@@ -158,7 +158,7 @@ after `password-store-timeout' seconds."
     (with-temp-buffer
       (condition-case err
           (call-process "zbarimg" nil t nil "-q" "--raw"
-                        (shell-quote-argument qr-image-filename))
+                        qr-image-filename)
         (error
          (error "It seems you don't have `zbar-tools' installed")))
       (password-store-otp-append

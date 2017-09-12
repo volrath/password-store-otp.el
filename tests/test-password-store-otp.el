@@ -231,7 +231,7 @@
       ;; zbarimg call
       (expect (spy-calls-args-for 'call-process 1)
               :to-equal
-              `("zbarimg" nil t nil "-q" "--raw" ,(shell-quote-argument qr-fname)))
+              `("zbarimg" nil t nil "-q" "--raw" ,qr-fname))
       ;; password-store-otp-append
       (expect (spy-calls-args-for 'shell-command-to-string 0)
               :to-equal
