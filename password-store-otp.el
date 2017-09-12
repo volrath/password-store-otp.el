@@ -41,7 +41,8 @@
 (defcustom password-store-otp-screenshots-path nil
   "OTP screenshots directory."
   :group 'password-store
-  :type 'string)
+  :type '(choice (const :tag "Off" nil)
+                 (file :tag "Expandable file name")))
 
 (defun password-store-otp--otpauth-lines (lines)
   "Return from LINES those that are OTP urls."
