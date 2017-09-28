@@ -117,6 +117,8 @@ METHOD can be either `append' or `insert', and it will be used as the
 primary \"pass otp\" command line verb."
   (unless (memq method '(append insert))
     (error (format "Unrecognized method %s" method)))
+  (password-store-otp--related-error
+    (password-store--run "otp" "--help"))  ;; make sure otp extension is installed.
   (message "%s" (shell-command-to-string (format "echo %s | %s otp %s -f %s"
                                                  (shell-quote-argument uri)
                                                  password-store-executable
