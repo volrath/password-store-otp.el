@@ -91,6 +91,10 @@ after `password-store-timeout' seconds."
             (error "Error: pass extension `pass-otp' is not installed")
           (error error-msg))))))
 
+(defun password-store-otp-completing-read ()
+  "Ask the user to select an entry from a list of all entries."
+  (password-store--completing-read))
+
 (defun password-store-otp-token (entry)
   "Return an OTP token from ENTRY."
   (password-store-otp--related-error
@@ -131,35 +135,35 @@ primary \"pass otp\" command line verb."
 ;;;###autoload
 (defun password-store-otp-token-copy (entry)
   "Copy an OTP token from ENTRY to clipboard."
-  (interactive (list (read-string "Password entry: ")))
+  (interactive (list (password-store-otp-completing-read)))
   (password-store-otp--safe-copy (password-store-otp-token entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 ;;;###autoload
 (defun password-store-otp-uri-copy (entry)
   "Copy an OTP URI from ENTRY to clipboard."
-  (interactive (list (read-string "Password entry: ")))
+  (interactive (list (password-store-otp-completing-read)))
   (password-store-otp--safe-copy (password-store-otp-uri entry))
   (message "Copied %s to the kill ring. Will clear in %s seconds." entry (password-store-timeout)))
 
 ;;;###autoload
 (defun password-store-otp-insert (entry otp-uri)
   "Insert a new ENTRY containing OTP-URI."
-  (interactive (list (read-string "Password entry: ")
+  (interactive (list (password-store-otp-completing-read)
                      (read-passwd "OTP URI: " t)))
   (password-store-otp-add-uri 'insert entry otp-uri))
 
 ;;;###autoload
 (defun password-store-otp-append (entry otp-uri)
   "Append to an ENTRY the given OTP-URI."
-  (interactive (list (read-string "Password entry: ")
+  (interactive (list (password-store-otp-completing-read)
                      (read-passwd "OTP URI: " t)))
   (password-store-otp-add-uri 'append entry otp-uri))
 
 ;;;###autoload
 (defun password-store-otp-append-from-image (entry)
   "Check clipboard for an image and scan it to get an OTP URI, append it to ENTRY."
-  (interactive (list (read-string "Password entry: ")))
+  (interactive (list (password-store-otp-completing-read)))
   (let ((qr-image-filename (password-store-otp--get-qr-image-filename entry)))
     (when (not (zerop (call-process "import" nil nil nil qr-image-filename)))
       (error "Couldn't get image from clipboard"))
