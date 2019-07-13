@@ -15,7 +15,7 @@ and Linux, YMMV.
 Shares all dependencies with `pass` and `pass-otp`, and introduces these for SS
 handling and QR code generation:
 
-- imagemagick (--with-x11 support)
+- imagemagick (--with-x11 support. Not required for Mac.)
 - zbar-tools
 - qrencode
 
