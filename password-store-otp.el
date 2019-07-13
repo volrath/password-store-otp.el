@@ -45,7 +45,7 @@
                  (file :tag "Expandable file name")))
 
 (defun password-store-otp--get-screenshot-executable ()
-  "Returns the name of the executable that should be used to take screenshots."
+  "Return the name of the executable that should be used to take screenshots."
   (if (eq window-system 'mac) "screencapture" "import"))
 
 (defun password-store-otp--otpauth-lines (lines)
