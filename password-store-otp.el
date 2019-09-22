@@ -67,7 +67,10 @@
 Clear previous password from kill ring.  Pointer to kill ring is
 stored in `password-store-kill-ring-pointer'.  SECRET is cleared
 after `password-store-timeout' seconds."
-  (password-store-clear)
+  ; the signature of `password-store-clear' changed:
+  (if (eq (car (func-arity #'password-store-clear)) 1)
+      (password-store-clear nil)
+    (password-store-clear))
   (kill-new secret)
   (setq password-store-kill-ring-pointer kill-ring-yank-pointer)
   (setq password-store-timeout-timer
