@@ -46,7 +46,8 @@
 
 (defun password-store-otp--get-screenshot-executable ()
   "Return the name of the executable that should be used to take screenshots."
-  (if (eq window-system 'mac) "screencapture" "import"))
+  (if (and (eq system-type 'darwin)
+           (executable-find "screencapture")) "screencapture" "import"))
 
 (defun password-store-otp--otpauth-lines (lines)
   "Return from LINES those that are OTP urls."
