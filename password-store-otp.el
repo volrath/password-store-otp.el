@@ -83,7 +83,7 @@ after `password-store-timeout' seconds."
                              (format-time-string "%Y-%m-%dT%T"))))
           (expand-file-name fname
                             password-store-otp-screenshots-path))
-      (format "/tmp/%s.png" (make-temp-name entry-base)))))
+      (make-temp-file entry-base nil ".png"))))
 
 (defmacro password-store-otp--related-error (&rest body)
   "Catch otp related errors in BODY and displays a better error message."
