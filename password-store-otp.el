@@ -44,10 +44,25 @@
   :type '(choice (const :tag "Off" nil)
                  (file :tag "Expandable file name")))
 
-(defun password-store-otp--get-screenshot-executable ()
-  "Return the name of the executable that should be used to take screenshots."
-  (if (and (eq system-type 'darwin)
-           (executable-find "screencapture")) "screencapture" "import"))
+(defcustom password-store-otp-qrencode-executable "qrencode"
+  "OTP qrencode executable."
+  :group 'password-store
+  :type 'string)
+
+(defcustom password-store-otp-screenshot-command
+  (or (and (eq system-type 'darwin)
+           (executable-find "screencapture"))
+      (and (executable-find "gnome-screenshot")
+           ("gnome-screenshot -a -f"))
+      "import")
+  "OTP screenshot executable."
+  :group 'password-store
+  :type 'string)
+
+(defcustom password-store-otp-zbarimg-executable "zbarimg"
+  "OTP zbarimg executable."
+  :group 'password-store
+  :type 'string)
 
 (defun password-store-otp--otpauth-lines (lines)
   "Return from LINES those that are OTP urls."
@@ -113,7 +128,8 @@ after `password-store-timeout' seconds."
 (defun password-store-otp-qrcode (entry &optional type)
   "Display a QR code from ENTRY's OTP, using TYPE."
   (if type
-      (shell-command-to-string (format "qrencode -o - -t%s %s"
+      (shell-command-to-string (format "%s -o - -t%s %s"
+                                       password-store-otp-qrencode-executable
                                        type
                                        (shell-quote-argument (password-store-otp--get-uri entry))))
     (password-store-otp--related-error
@@ -170,12 +186,16 @@ primary \"pass otp\" command line verb."
   "Check clipboard for an image and scan it to get an OTP URI, append it to ENTRY."
   (interactive (list (password-store-otp-completing-read)))
   (let ((qr-image-filename (password-store-otp--get-qr-image-filename entry))
-        (screenshot-executable (password-store-otp--get-screenshot-executable)))
-    (when (not (zerop (call-process screenshot-executable nil nil nil qr-image-filename)))
+        (screenshot-command
+         (split-string-shell-command password-store-otp-screenshot-command)))
+    (when (not (zerop (apply 'call-process
+                             `(,(car screenshot-command) nil nil nil
+                               ,@(cdr screenshot-command)
+                               ,qr-image-filename))))
       (error "Couldn't get image from clipboard"))
     (with-temp-buffer
       (condition-case nil
-          (call-process "zbarimg" nil t nil "-q" "--raw"
+          (call-process password-store-otp-zbarimg-executable nil t nil "-q" "--raw"
                         qr-image-filename)
         (error
          (error "It seems you don't have `zbar-tools' installed")))
