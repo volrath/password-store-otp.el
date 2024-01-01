@@ -3,7 +3,7 @@
 ;; Filename: password-store-otp.el
 ;; Author: Daniel Barreto
 ;; Created: Tue Aug 22 13:46:01 2017 (+0200)
-;; Version: 0.1.0
+;; Version: 0.1.5
 ;; Package-Requires: ((emacs "25") (s "1.9.0") (password-store "0.1"))
 ;; URL: https://github.com/volrath/password-store-otp.el
 ;; Keywords: tools, pass
@@ -103,12 +103,12 @@ after `password-store-timeout' seconds."
 (defun password-store-otp-token (entry)
   "Return an OTP token from ENTRY."
   (password-store-otp--related-error
-    (password-store--run "otp" entry)))
+   (password-store--run "otp" entry)))
 
 (defun password-store-otp-uri (entry)
   "Return an OTP URI from ENTRY."
   (password-store-otp--related-error
-    (password-store--run "otp" "uri" entry)))
+   (password-store--run "otp" "uri" entry)))
 
 (defun password-store-otp-qrcode (entry &optional type)
   "Display a QR code from ENTRY's OTP, using TYPE."
@@ -117,7 +117,7 @@ after `password-store-timeout' seconds."
                                        type
                                        (shell-quote-argument (password-store-otp--get-uri entry))))
     (password-store-otp--related-error
-      (password-store--run "otp" "uri" "-q" entry))))
+     (password-store--run "otp" "uri" "-q" entry))))
 
 (defun password-store-otp-add-uri (method entry uri)
   "Using METHOD, add in ENTRY a URI.
@@ -127,7 +127,7 @@ primary \"pass otp\" command line verb."
   (unless (memq method '(append insert))
     (error (format "Unrecognized method %s" method)))
   (password-store-otp--related-error
-    (password-store--run "otp" "--help"))  ;; make sure otp extension is installed.
+   (password-store--run "otp" "--help"))  ;; make sure otp extension is installed.
   (message "%s" (shell-command-to-string (format "echo %s | %s otp %s -f %s"
                                                  (shell-quote-argument uri)
                                                  password-store-executable
